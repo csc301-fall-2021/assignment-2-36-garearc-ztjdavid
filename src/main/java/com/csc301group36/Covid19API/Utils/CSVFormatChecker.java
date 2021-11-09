@@ -1,22 +1,23 @@
 package com.csc301group36.Covid19API.Utils;
 
+import com.csc301group36.Covid19API.Entities.DBType;
 import com.csc301group36.Covid19API.Exceptions.InternalError;
 import lombok.NoArgsConstructor;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Component
 @NoArgsConstructor
 public class CSVFormatChecker {
     @Autowired
     private CSVManager csvManager;
+    @Autowired
+    private DateUtils dateUtils;
 
     private final List<String> timeSeriesOverrideHeaders = Arrays.asList("Province/State", "Country/Region", "Lat", "Long");
     private final List<String> dailyReportsHeaders = Arrays.asList(
@@ -41,23 +42,43 @@ public class CSVFormatChecker {
     }
 
     private boolean isValidTimeSeriesUpdateHelper(List<CSVRecord> records, Collection<String> headerSet) throws InternalError{
-        return formatCheckHelper(records, headerSet);
+        return formatCheckHelper(records, headerSet) && hasValidDateFields(records);
     }
 
     private boolean isValidTimeSeriesOverrideHelper(List<CSVRecord> records) throws InternalError{
-        return formatCheckHelper(records, timeSeriesOverrideHeaders);
+        return formatCheckHelper(records, timeSeriesOverrideHeaders) && hasValidDateFields(records);
     }
 
     private boolean formatCheckHelper(List<CSVRecord> records, Collection<String> headers) throws InternalError{
         if(!records.isEmpty()){
-            CSVRecord record = records.get(0);
+            CSVRecord record0 = records.get(0);
             try{
                 if(csvManager.getHeaders(records).size() != headers.size()) return false;
                 for(String header : headers){
-                    record.get(header);
+                    record0.get(header);
                 }
             }catch (Exception e) {throw new InternalError("Invalid CSV format. Fields must be: "
                     + headers.toString());}
+            try{
+                for(CSVRecord record : records){
+                    for(String header : headers){
+                        record.get(header);
+                    }
+                }
+            }catch (Exception e) {throw new InternalError("Records are not consistent with fields, please check your csv format.");}
+        }
+        return true;
+    }
+
+    private boolean hasValidDateFields(List<CSVRecord> records) throws InternalError{
+        Collection<String> headers = csvManager.getHeaders(records);
+        for(String header : headers){
+            if(timeSeriesOverrideHeaders.contains(header)) continue;
+            try{
+                if(!dateUtils.isValidDate(header, DBType.TimeSeries)) return false;
+            }catch (Exception e){
+                throw new InternalError("Operation denied. We found some field(s) with wrong date format.");
+            }
         }
         return true;
     }

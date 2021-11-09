@@ -163,7 +163,7 @@ public class CSVManager {
     public Collection<String> getHeaders(List<CSVRecord> records) throws InternalError{
         if(!records.isEmpty()){
             CSVRecord record = records.get(0);
-            return record.toMap().keySet();
+            return record.getParser().getHeaderNames();
         }
         return Collections.emptyList();
     }
