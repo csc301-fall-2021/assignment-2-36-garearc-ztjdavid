@@ -30,7 +30,7 @@ public class DBManagerTest {
         testFile.createNewFile();
         dbManager.writeContentToFile("test\n", testFile.getPath());
         BufferedReader reader = new BufferedReader(new FileReader(testFile));
-        Assertions.assertThat(reader.readLine()).as("Test writing to a csv file.").isEqualTo("test\n");
+        Assertions.assertThat(reader.readLine()).as("Test writing to a csv file.").isEqualTo("test");
         reader.close();
         testFile.delete();
     }

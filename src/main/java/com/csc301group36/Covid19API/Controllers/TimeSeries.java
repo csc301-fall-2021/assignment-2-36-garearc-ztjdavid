@@ -23,7 +23,7 @@ public class TimeSeries {
     @Autowired
     QueryParser queryParser;
 
-    @GetMapping(path = "/overwrite/{type}")
+    @PostMapping(path = "/overwrite/{type}")
     public Response overWrite(@RequestBody String data, @PathVariable("type") String type) throws InternalError, RequestError {
         Response response = new Response();
         if(csvManager.overrideTimeSeriesFile(data, dataService.parseTimeRequestType(type))){
@@ -36,7 +36,7 @@ public class TimeSeries {
         return response;
     }
 
-    @GetMapping(path = "/update/{type}")
+    @PostMapping(path = "/update/{type}")
     public Response update(@RequestBody String data, @PathVariable("type") String type) throws InternalError, RequestError {
         Response response = new Response();
         if(csvManager.updateTimeSeriesFile(data, dataService.parseTimeRequestType(type))){
@@ -49,12 +49,12 @@ public class TimeSeries {
         return response;
     }
 
-    @PostMapping(path = "/query/csv/{type}")
+    @GetMapping(path = "/query/csv/{type}")
     public ResponseEntity<String> queryData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
         return dataService.getCsvData(reqBody, type);
     }
 
-    @PostMapping(path = "/query/json/{type}")
+    @GetMapping(path = "/query/json/{type}")
     public QueryResponse queryJsonData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
         Conditions conditions = dataService.processInput(reqBody, type);
         List<CSVRecord> records = csvManager.query(conditions);

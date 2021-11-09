@@ -25,7 +25,7 @@ public class DailyReports {
     @Autowired
     QueryParser queryParser;
 
-    @GetMapping(path = "/upload/{date}")
+    @PostMapping(path = "/upload/{date}")
     public Response upload(@RequestBody String data, @PathVariable("date") String date) throws InternalError, RequestError {
         Response response = new Response();
         dataService.validateTime(date);
@@ -39,12 +39,12 @@ public class DailyReports {
         return response;
     }
 
-    @PostMapping(path = "/query/csv/{type}")
+    @GetMapping(path = "/query/csv/{type}")
     public ResponseEntity<String> queryCsvData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
         return dataService.getCsvData(reqBody, type);
     }
 
-    @PostMapping(path = "/query/json/{type}")
+    @GetMapping (path = "/query/json/{type}")
     public QueryResponse queryJsonData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
         Conditions conditions = dataService.processInput(reqBody, type);
         List<CSVRecord> records = csvManager.query(conditions);

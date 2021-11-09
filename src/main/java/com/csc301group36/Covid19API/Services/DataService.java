@@ -17,10 +17,11 @@ import org.springframework.stereotype.Repository;
 import com.csc301group36.Covid19API.Entities.TimeSeriesRequestType;
 import com.csc301group36.Covid19API.Exceptions.RequestError;
 import com.csc301group36.Covid19API.Utils.DateUtils;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Repository
+@Service
 public class DataService {
     @Autowired
     DateUtils dateUtils;
