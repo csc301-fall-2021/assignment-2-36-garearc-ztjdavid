@@ -76,7 +76,7 @@ public class CSVManager {
                 CSVPrinter printer = getPrinter(headers, writer);
                 printer.printRecords(mergedRecords);
                 dbManager.writeToTimeSeriesFile(writer.toString(), type);
-            }catch (Exception e) {throw new InternalError("Database error(Failed to write to file.");}
+            }catch (Exception e) {throw new InternalError("Database error(Failed to write to file.)");}
         }
     }
 
@@ -111,7 +111,7 @@ public class CSVManager {
         }
     }
 
-    public Collection<String> getHeaders(List<CSVRecord> records) throws InternalError{
+    private Collection<String> getHeaders(List<CSVRecord> records) throws InternalError{
         if(!records.isEmpty()){
             CSVRecord record = records.get(0);
             return record.toMap().keySet();
