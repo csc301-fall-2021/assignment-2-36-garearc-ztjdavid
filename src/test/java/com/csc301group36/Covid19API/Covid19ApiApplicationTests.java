@@ -1,5 +1,6 @@
 package com.csc301group36.Covid19API;
 
+import com.csc301group36.Covid19API.Entities.QueryResponse;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
@@ -10,10 +11,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @SpringBootTest
 class Covid19ApiApplicationTests {
@@ -28,31 +26,15 @@ class Covid19ApiApplicationTests {
 				.build();
 
 		Iterable<CSVRecord> records = format.parse(r);
+		List<CSVRecord> recordList = new ArrayList<>();
+		records.forEach(recordList::add);
 
-		for(CSVRecord record : records) {
-			System.out.println(record);
-			break;
-		}
-		for(CSVRecord record : records) {
-			System.out.println(record);
-		}
-//		Collection<String> headers = temp.get(0).toMap().keySet();
-//
-//
-//		CSVFormat format2 = CSVFormat.Builder.create(CSVFormat.DEFAULT)
-//				.setHeader(headers.toArray(new String[0]))
-//				.setIgnoreHeaderCase(true)
-//				.setDelimiter(',')
-//				.build();
-//
-//		StringWriter w = new StringWriter();
-//		CSVPrinter p = new CSVPrinter(w, format2);
-//		p.printRecords(records);
-//		p.flush();
-//		p.close();
-//
-//		System.out.println(w.toString());
 
+		List<Map<String, String>> queryResult = new ArrayList<>();
+		for(CSVRecord record : recordList){
+			queryResult.add(record.toMap());
+		}
+		System.out.println(queryResult);
 	}
 
 }
