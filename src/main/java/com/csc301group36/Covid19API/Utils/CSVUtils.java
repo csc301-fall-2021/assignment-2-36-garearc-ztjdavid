@@ -4,7 +4,7 @@ import com.csc301group36.Covid19API.Entities.Conditions;
 import com.csc301group36.Covid19API.Entities.DBType;
 import com.csc301group36.Covid19API.Exceptions.InvalidDataTypeError;
 import com.csc301group36.Covid19API.Exceptions.RecordGetError;
-import com.csc301group36.Covid19API.Exceptions.RequestError;
+import com.csc301group36.Covid19API.Exceptions.InternalError;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class CSVUtils {
     public CSVUtils(){
     }
 
-    public Integer query(Conditions conditions) throws RequestError {
+    public List<CSVRecord> query(Conditions conditions) throws InternalError {
         if(conditions.getType() == DBType.TimeSeries){
             return getTimeSeriesQueryResult(conditions);
         }
@@ -34,67 +34,30 @@ public class CSVUtils {
         }
     }
 
-    private Integer getTimeSeriesQueryResult(Conditions conditions)
-            throws RequestError{
+    private List<CSVRecord> getTimeSeriesQueryResult(Conditions conditions)
+            throws InternalError {
         File f = dbManager.getTimeSeriesFile(conditions.getTimeSeriesRequestType());
         Iterable<CSVRecord> records = getRecords(f);
         List<CSVRecord> qualified = new ArrayList<>();
         for(CSVRecord record : records){
-            if(conditions.isSatisfied(record)) qualified.add(record);
+            if(conditions.areSatisfied(record)) qualified.add(record);
         }
         return getTimeSeriesQueryResultHelper(qualified, conditions, f);
     }
 
-    private Integer getDailyReportQueryResult(Conditions conditions) throws RequestError{
-        int sum = 0;
+    private List<CSVRecord> getDailyReportQueryResult(Conditions conditions) throws InternalError {
         List<File> fs = getFilesByRange(conditions);
+        List<CSVRecord> result = new ArrayList<>();
         for(File f : fs){
             Iterable<CSVRecord> records = getRecords(f);
             for(CSVRecord record : records){
-                if(!conditions.isSatisfied(record)) continue;
-                try{
-                    sum += Integer.parseInt(record.get(conditions.getDailyReportRequestType().colName));
-                }catch (NumberFormatException ne){
-                    throw new InvalidDataTypeError(record.toString(), f.getName());
-                }catch (Exception e){
-                    throw new RecordGetError(conditions.getDailyReportRequestType().colName);
-                }
+                if(conditions.areSatisfied(record)) result.add(record);
             }
         }
-        return sum;
+        return result;
     }
 
-    private int getTimeSeriesQueryResultHelper(List<CSVRecord> qualified, Conditions conditions, File f)
-            throws RequestError{
-        if(qualified.size() == 0) return 0;
-        int sum = 0;
-        List<String> keys = new ArrayList<>(qualified.get(0).toMap().keySet());
-        List<String> cols = new ArrayList<>();
-        Date startD = dateUtils.stringToDate(conditions.getStartDate(), conditions.getType());
-        Date endD = dateUtils.stringToDate(conditions.getEndDate(), conditions.getType());
-        // Find all date columns in between.
-        for(String date : keys){
-            if(dateUtils.isValidDate(date, conditions.getType())){
-                Date dateD = dateUtils.stringToDate(date, conditions.getType());
-                if(dateUtils.isInBetween(startD, endD, dateD)) cols.add(date);
-            }
-        }
-        // Sum up
-        for(CSVRecord record : qualified){
-            for (String col : cols){
-                try{
-                    sum += Integer.parseInt(record.get(col));
-                }catch (NumberFormatException e){
-                    throw new InvalidDataTypeError(record.toString(), f.getName());
-                }catch (Exception e){
-                    throw new RecordGetError(col);
-                }
-            }
-        }
-        return sum;
-    }
-
-    private List<File> getFilesByRange(Conditions conditions) throws RequestError{
+    private List<File> getFilesByRange(Conditions conditions) throws InternalError {
         Date startD = dateUtils.stringToDate(conditions.getStartDate(), conditions.getType());
         Date endD = dateUtils.stringToDate(conditions.getEndDate(), conditions.getType());
         List<File> result = new ArrayList<>();
@@ -105,12 +68,12 @@ public class CSVUtils {
         return result;
     }
 
-    private Iterable<CSVRecord> getRecords(File f) throws RequestError{
+    private Iterable<CSVRecord> getRecords(File f) throws InternalError {
         try{
             Reader r = new FileReader(f);
             return CSVFormat.DEFAULT.parse(r);
         }catch (IOException e){
-            throw new RequestError("Server Internal Error: parse failed in getRecords() in CSVUtils class.");
+            throw new InternalError("Server Internal Error: parse failed in getRecords() in CSVUtils class.");
         }
     }
 

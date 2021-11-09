@@ -1,12 +1,14 @@
 package com.csc301group36.Covid19API.Entities;
 
-import com.csc301group36.Covid19API.Exceptions.RequestError;
+import com.csc301group36.Covid19API.Exceptions.InternalError;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.csv.CSVRecord;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 public class Conditions {
@@ -19,20 +21,21 @@ public class Conditions {
     private TimeSeriesRequestType timeSeriesRequestType;
     private DailyReportRequestType dailyReportRequestType;
 
-    public boolean isSatisfied(CSVRecord r) throws RequestError {
+    public boolean areSatisfied(CSVRecord r) throws InternalError {
         try{
             if(type == DBType.TimeSeries){
-                if(!r.get("Country/Region").equals(country)) return false;
-                if(!r.get("Province/State").equals(state)) return false;
+                if(country != null && !r.get("Country/Region").equalsIgnoreCase(country)) return false;
+                if(state != null && !r.get("Province/State").equalsIgnoreCase(state)) return false;
                 return true;
             }
             if(type == DBType.DailyReports){
-                if(!r.get("Country_Region").equals(country)) return false;
-                if(!r.get("Province_State").equals(state)) return false;
-                if(!r.get("Combined_Key").equals(combinedKeys)) return false;
+                if(country != null && !r.get("Country_Region").equalsIgnoreCase(country)) return false;
+                if(state != null && !r.get("Province_State").equalsIgnoreCase(state)) return false;
+                if(combinedKeys != null && !r.get("Combined_Key").equalsIgnoreCase(combinedKeys)) return false;
                 return true;
             }
-        }catch (Exception e) {throw new RequestError("Server Internal Error: method isSatisfied() cannot get value.");}
+        }catch (Exception e) {throw new InternalError("Server Internal Error: method isSatisfied() cannot get value.");}
         return false;
     }
+
 }

@@ -1,7 +1,7 @@
 package com.csc301group36.Covid19API.Utils;
 
 import com.csc301group36.Covid19API.Entities.TimeSeriesRequestType;
-import com.csc301group36.Covid19API.Exceptions.RequestError;
+import com.csc301group36.Covid19API.Exceptions.InternalError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +14,8 @@ import java.util.List;
 @Component
 public class DBManager {
     private final HashMap<String, String> dateToDaily = new HashMap<>();
-    private final String timeSeriesPath = "/timeSeries";
-    private final String dailyReportsPath = "/dailyReports";
+    private final String timeSeriesDirName = "timeSeries";
+    private final String dailyReportsDirName = "dailyReports";
 
     @Autowired
     private CSVFormatChecker csvFormatChecker;
@@ -24,54 +24,54 @@ public class DBManager {
         initFolders();
     }
 
-    public File uploadTimeSeriesFile(TimeSeriesRequestType type, String content) throws RequestError {
-        File f = new File(getFilePath(timeSeriesPath, type.fileName));
+    public File uploadTimeSeriesFile(TimeSeriesRequestType type, String content) throws InternalError {
+        File f = new File(getFilePath(timeSeriesDirName, type.fileName));
         try{
             f.createNewFile();
             FileWriter writer = new FileWriter(f);
             writer.write(content);
             writer.close();
-        }catch (Exception e){ throw new RequestError("We have encountered a server issue, please try later.");}
+        }catch (Exception e){ throw new InternalError("We have encountered a server issue, please try later.");}
         if(csvFormatChecker.isValidTimeSeries(f)) {
             return f;
         }
-        throw new RequestError("Invalid csv format. Please make sure you upload string with correct csv format.");
+        throw new InternalError("Invalid csv format. Please make sure you upload string with correct csv format.");
     }
 
-    public File uploadDailyReportFile(String date, String content) throws RequestError{
-        File f = new File(getFilePath(dailyReportsPath, date));
+    public File uploadDailyReportFile(String date, String content) throws InternalError {
+        File f = new File(getFilePath(dailyReportsDirName, date));
         try{
             f.createNewFile();
             FileWriter writer = new FileWriter(f);
             writer.write(content);
             writer.close();
-        }catch (Exception e){throw new RequestError("We have encountered a server issue, please try later.");}
+        }catch (Exception e){throw new InternalError("We have encountered a server issue, please try later.");}
         if(csvFormatChecker.isValidDailyReports(f)){
-            dateToDaily.put(date, getFilePath(dailyReportsPath, date));
+            dateToDaily.put(date, getFilePath(dailyReportsDirName, date));
             return f;
         }
         f.delete();
-        throw new RequestError("Invalid csv format. Please make sure the uploaded string has correct csv format.");
+        throw new InternalError("Invalid csv format. Please make sure the uploaded string has correct csv format.");
     }
 
-    public File getTimeSeriesFile(TimeSeriesRequestType type) throws RequestError{
-        File f = new File(getFilePath(timeSeriesPath, type.fileName));
+    public File getTimeSeriesFile(TimeSeriesRequestType type) throws InternalError {
+        File f = new File(getFilePath(timeSeriesDirName, type.fileName));
         if(!f.exists()) {
-            throw new RequestError("We do not have corresponding datebase now. Please upload csv data first.");
+            throw new InternalError("We do not have corresponding datebase now. Please upload csv data first.");
         }
         return f;
     }
 
 
-    public File getDailyFile(String date) throws RequestError{
+    public File getDailyFile(String date) throws InternalError {
         if(dateToDaily.containsKey(date)){
-            File f = new File(getFilePath(dailyReportsPath, dateToDaily.get(date)));
+            File f = new File(getFilePath(dailyReportsDirName, dateToDaily.get(date)));
             if(!f.exists()) {
-                throw new RequestError("We do not have corresponding datebase now. Please upload csv data first.");
+                throw new InternalError("We do not have corresponding datebase now. Please upload csv data first.");
             }
             return f;
         }
-        throw new RequestError("We do not have corresponding datebase now. Please upload csv data first.");
+        throw new InternalError("We do not have corresponding datebase now. Please upload csv data first.");
     }
 
     public List<String> getDailyFileDates(){
@@ -79,11 +79,11 @@ public class DBManager {
     }
 
     private void initFolders(){
-        new File(timeSeriesPath).mkdirs();
-        new File(dailyReportsPath).mkdirs();
+        new File(timeSeriesDirName).mkdirs();
+        new File(dailyReportsDirName).mkdirs();
     }
 
-    private String getFilePath(String basePath, String fileName){
-        return basePath + "/" + fileName + ".csv";
+    private String getFilePath(String dirName, String fileName){
+        return "/" + dirName + "/" + fileName + ".csv";
     }
 }
