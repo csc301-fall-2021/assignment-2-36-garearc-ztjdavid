@@ -55,9 +55,7 @@ public class DBManager {
         return new ArrayList<>(dateToDaily.keySet());
     }
 
-
-    // Helpers
-    private void writeContentToFile(String content, String filepath) throws InternalError{
+    public void writeContentToFile(String content, String filepath) throws InternalError{
         try{
             File f = new File(filepath);
             f.createNewFile();
@@ -69,6 +67,8 @@ public class DBManager {
             throw new InternalError("Server cannot save your data, please try again.");
         }
     }
+
+    // Helpers
 
     private void initFolders(){
         new File(timeSeriesDirName).mkdirs();
