@@ -52,13 +52,11 @@ public class CSVFormatChecker {
     private boolean formatCheckHelper(List<CSVRecord> records, Collection<String> headers) throws InternalError{
         if(!records.isEmpty()){
             CSVRecord record0 = records.get(0);
-            try{
-                if(csvManager.getHeaders(records).size() != headers.size()) return false;
-                for(String header : headers){
-                    record0.get(header);
-                }
-            }catch (Exception e) {throw new InternalError("Invalid CSV format. Fields must be: "
-                    + headers.toString());}
+            Collection<String> newHeaders = csvManager.getHeaders(records);
+            if(newHeaders.size() != headers.size()) throw new InternalError("Invalid CSV format. Fields must be: "
+                    + headers.toString());
+            for(String h : newHeaders) if(!headers.contains(h)) throw new InternalError("Invalid CSV format. Fields must be: "
+                    + headers.toString());
             try{
                 for(CSVRecord record : records){
                     for(String header : headers){
