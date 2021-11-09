@@ -34,7 +34,7 @@ public class DBManager {
     public File getTimeSeriesFile(TimeSeriesRequestType type) throws InternalError {
         File f = new File(getFilePath(timeSeriesDirName, type.fileName));
         if(!f.exists()) {
-            throw new InternalError("We do not have corresponding datebase now. Please upload csv data first.");
+            throw new InternalError("We do not have corresponding database now. Please upload csv data first.");
         }
         return f;
     }
@@ -44,11 +44,11 @@ public class DBManager {
         if(dateToDaily.containsKey(date)){
             File f = new File(getFilePath(dailyReportsDirName, dateToDaily.get(date)));
             if(!f.exists()) {
-                throw new InternalError("We do not have corresponding datebase now. Please upload csv data first.");
+                throw new InternalError("We do not have corresponding database now. Please upload csv data first.");
             }
             return f;
         }
-        throw new InternalError("We do not have corresponding datebase now. Please upload csv data first.");
+        throw new InternalError("We do not have data on that date now. Please upload csv data first.");
     }
 
     public List<String> getDailyFileDates(){

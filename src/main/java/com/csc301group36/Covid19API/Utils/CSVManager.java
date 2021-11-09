@@ -65,14 +65,19 @@ public class CSVManager {
             try {
                 // merge records by replacing oldRecords
                 for(CSVRecord newRecord : newRecords){
+                    boolean replaced = false;
                     for(CSVRecord oldRecord : oldRecords){
                         if(newRecord.get("Province/State").equals(oldRecord.get("Province/State")) &&
                                 newRecord.get("Country/Region").equals(oldRecord.get("Country/Region")) &&
                                 newRecord.get("Lat").equals(oldRecord.get("Lat")) &&
                                 newRecord.get("Long").equals(oldRecord.get("Long"))
-                        ) mergedRecords.set(mergedRecords.indexOf(oldRecord), newRecord);
-                        else mergedRecords.add(newRecord);
+                        ){
+                            mergedRecords.set(mergedRecords.indexOf(oldRecord), newRecord);
+                            replaced = true;
+                            break;
+                        }
                     }
+                    if(!replaced) mergedRecords.add(newRecord);
                 }
                 // Write merged records into StringWriter
                 StringWriter writer = new StringWriter();
@@ -81,6 +86,45 @@ public class CSVManager {
                 dbManager.writeToTimeSeriesFile(writer.toString(), type);
             }catch (Exception e) {throw new InternalError("Database error(Failed to write to file.)");}
             return true;
+        }
+        return false;
+    }
+
+    public boolean updateDailyReportsFile(String csvString, String date) throws InternalError{
+        List<CSVRecord> newRecords = getRecords(csvString);
+        Collection<String> headers = getHeaders(newRecords);
+        if(csvFormatChecker.isValidDailyReports(newRecords)){
+            List<CSVRecord> oldRecords = getRecords(dbManager.getDailyFile(date));
+            // Insert all oldRecords first
+            List<CSVRecord> mergedRecords = new ArrayList<>(oldRecords);
+            try {
+                // merge records by replacing oldRecords
+                for(CSVRecord newRecord : newRecords){
+                    boolean replaced = false;
+                    for(CSVRecord oldRecord : oldRecords){
+                        if(newRecord.get("FIPS").equals(oldRecord.get("FIPS")) &&
+                                newRecord.get("Admin2").equals(oldRecord.get("Admin2")) &&
+                                newRecord.get("Province_State").equals(oldRecord.get("Province_State")) &&
+                                newRecord.get("Country_Region").equals(oldRecord.get("Country_Region")) &&
+                                newRecord.get("Combined_Key").equals(oldRecord.get("Combined_Key"))
+                        ){
+                            mergedRecords.set(mergedRecords.indexOf(oldRecord), newRecord);
+                            replaced = true;
+                            break;
+                        }
+                    }
+                    if(!replaced) mergedRecords.add(newRecord);
+                }
+                // Write merged records into StringWriter
+                StringWriter writer = new StringWriter();
+                CSVPrinter printer = getPrinter(headers, writer);
+                printer.printRecords(mergedRecords);
+                dbManager.writeToDailyReportsFile(writer.toString(), date);
+            }catch (IOException ioe) {
+                throw new InternalError("Database error(Failed to write to file.)");
+            }catch (Exception e){
+                throw new InternalError("Failed to load fields.");
+            }
         }
         return false;
     }
