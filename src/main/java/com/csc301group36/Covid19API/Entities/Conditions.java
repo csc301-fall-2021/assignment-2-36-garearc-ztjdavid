@@ -1,11 +1,14 @@
 package com.csc301group36.Covid19API.Entities;
 
 import com.csc301group36.Covid19API.Exceptions.InternalError;
+import com.csc301group36.Covid19API.Exceptions.InvalidCSVFormatError;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.csv.CSVRecord;
+
+import java.io.File;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,7 +24,7 @@ public class Conditions {
     private TimeSeriesRequestType timeSeriesRequestType;
     private DailyReportRequestType dailyReportRequestType;
 
-    public boolean areSatisfied(CSVRecord r) throws InternalError {
+    public boolean areSatisfied(CSVRecord r, File f) throws InternalError {
         try{
             if(type == DBType.TimeSeries){
                 if(country != null && !r.get("Country/Region").equalsIgnoreCase(country)) return false;
@@ -34,7 +37,9 @@ public class Conditions {
                 if(combinedKeys != null && !r.get("Combined_Key").equalsIgnoreCase(combinedKeys)) return false;
                 return true;
             }
-        }catch (Exception e) {throw new InternalError("Server Internal Error: method isSatisfied() cannot get value.");}
+        }catch (Exception e) {
+            throw new InvalidCSVFormatError(f.getName());
+        }
         return false;
     }
 

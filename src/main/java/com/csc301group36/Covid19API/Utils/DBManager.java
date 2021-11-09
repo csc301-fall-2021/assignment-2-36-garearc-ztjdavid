@@ -17,41 +17,18 @@ public class DBManager {
     private final String timeSeriesDirName = "timeSeries";
     private final String dailyReportsDirName = "dailyReports";
 
-    @Autowired
-    private CSVFormatChecker csvFormatChecker;
-
     private DBManager(){
         initFolders();
     }
 
-    public File uploadTimeSeriesFile(TimeSeriesRequestType type, String content) throws InternalError {
-        File f = new File(getFilePath(timeSeriesDirName, type.fileName));
-        try{
-            f.createNewFile();
-            FileWriter writer = new FileWriter(f);
-            writer.write(content);
-            writer.close();
-        }catch (Exception e){ throw new InternalError("We have encountered a server issue, please try later.");}
-        if(csvFormatChecker.isValidTimeSeries(f)) {
-            return f;
-        }
-        throw new InternalError("Invalid csv format. Please make sure you upload string with correct csv format.");
+    public void writeToTimeSeriesFile(String content, TimeSeriesRequestType type) throws InternalError{
+        writeContentToFile(content, getFilePath(timeSeriesDirName, type.fileName));
     }
 
-    public File uploadDailyReportFile(String date, String content) throws InternalError {
-        File f = new File(getFilePath(dailyReportsDirName, date));
-        try{
-            f.createNewFile();
-            FileWriter writer = new FileWriter(f);
-            writer.write(content);
-            writer.close();
-        }catch (Exception e){throw new InternalError("We have encountered a server issue, please try later.");}
-        if(csvFormatChecker.isValidDailyReports(f)){
-            dateToDaily.put(date, getFilePath(dailyReportsDirName, date));
-            return f;
-        }
-        f.delete();
-        throw new InternalError("Invalid csv format. Please make sure the uploaded string has correct csv format.");
+    public void writeToDailyReportsFile(String content, String date) throws InternalError{
+        String path = getFilePath(dailyReportsDirName, dateToDaily.get(date));
+        dateToDaily.put(date, path);
+        writeContentToFile(content, path);
     }
 
     public File getTimeSeriesFile(TimeSeriesRequestType type) throws InternalError {
@@ -76,6 +53,21 @@ public class DBManager {
 
     public List<String> getDailyFileDates(){
         return new ArrayList<>(dateToDaily.keySet());
+    }
+
+
+    // Helpers
+    private void writeContentToFile(String content, String filepath) throws InternalError{
+        try{
+            File f = new File(filepath);
+            f.createNewFile();
+            FileWriter writer = new FileWriter(f);
+            writer.write(content);
+            writer.flush();
+            writer.close();
+        }catch (Exception e){
+            throw new InternalError("Server cannot save your data, please try again.");
+        }
     }
 
     private void initFolders(){

@@ -6,4 +6,8 @@ public class InvalidDataTypeError extends InternalError {
         super("We found an invalid data(row) in the database: " +
                 record + "\n" + "In database: "+ filename);
     }
+    public InvalidDataTypeError(String record, String filename, int code) {
+        super("We found an invalid data(row) in the database: " +
+                record + "\n" + "In database: "+ filename, code);
+    }
 }
