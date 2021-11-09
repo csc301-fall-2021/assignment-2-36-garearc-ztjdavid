@@ -42,7 +42,8 @@ public class CSVUtils {
         for(CSVRecord record : records){
             if(conditions.areSatisfied(record)) qualified.add(record);
         }
-        return getTimeSeriesQueryResultHelper(qualified, conditions, f);
+
+        return qualified;
     }
 
     private List<CSVRecord> getDailyReportQueryResult(Conditions conditions) throws InternalError {
