@@ -19,6 +19,10 @@ public class QueryParser {
     @Autowired
     private CSVManager csvManager;
 
+    /**
+     * Parse a list of records into String with CSV format.
+     * @param records a list of records <strong>from the same CSV source</strong>.
+     * */
     public String parseCSV(List<CSVRecord> records) throws InternalError {
         StringWriter writer = new StringWriter();
         Collection<String> headers = csvManager.getHeaders(records);
@@ -31,6 +35,11 @@ public class QueryParser {
         return writer.toString();
     }
 
+    /**
+     * Parse a list of records into a {@link com.csc301group36.Covid19API.Entities.QueryResponse} that can be
+     * returned as JSON format.
+     * @param records a list of records <strong>from the same CSV source</strong>.
+     * */
     public QueryResponse parseJSON(List<CSVRecord> records){
         List<Map<String, String>> queryResult = new ArrayList<>();
         for(CSVRecord record : records){

@@ -36,6 +36,12 @@ public class CSVManager {
         return formatter;
     }
 
+    /**
+     * Get a CSVPrinter with DEFAULT CSV format and ',' as delimiter.
+     * @param headers Headers(Fields) to print when use this printer to print CSV files. Headers must be consistent
+     * with the records when printing.
+     * @param writer A JAVA Writer that defines where the output should go.
+     * */
     public CSVPrinter getPrinter(Collection<String> headers, Writer writer) throws InternalError{
         try{
             CSVFormat formatter = CSVFormat.Builder.create(CSVFormat.DEFAULT)
@@ -46,6 +52,12 @@ public class CSVManager {
         }catch (Exception e){throw new InternalError("Failed to create CSVPrinter.");}
     }
 
+    /**
+     * Override an entire TimeSeries file with given csvString.
+     * @param csvString The CSV string that will override the original file.
+     * @param type A {@link com.csc301group36.Covid19API.Entities.TimeSeriesRequestType} that defines which
+     * file it should apply the change to.
+     * */
     public boolean overrideTimeSeriesFile(String csvString, TimeSeriesRequestType type) throws InternalError{
         List<CSVRecord> records = getRecords(csvString);
         if(csvFormatChecker.isValidTimeSeriesOverride(records)){
@@ -54,6 +66,15 @@ public class CSVManager {
         }
         return false;
     }
+    /**
+     * Update a TimeSeries file.
+     * <p>A file will be updated by two ways: </p>
+     * <p>1. Append: Any record that does not match all records in old file will be appended.</p>
+     * <p>2. Replace: Any record that matches a record in the old file will replace the old record.</p>
+     * @param csvString The CSV string containing records that will be inserted into the file.
+     * @param type A {@link com.csc301group36.Covid19API.Entities.TimeSeriesRequestType} that defines which
+     * file it should apply the change to.
+     * */
     //TODO: need to deal with False return value when format is incorrect.
     public boolean updateTimeSeriesFile(String csvString, TimeSeriesRequestType type) throws InternalError{
         List<CSVRecord> newRecords = getRecords(csvString);
@@ -90,6 +111,14 @@ public class CSVManager {
         return false;
     }
 
+    /**
+     * Update a dailyReports file.
+     * <p>A file will be updated by two ways: </p>
+     * <p>1. Append: Any record that does not match all records in old file will be appended.</p>
+     * <p>2. Replace: Any record that matches a record in the old file will replace the old record.</p>
+     * @param csvString The CSV string containing records that will be inserted into the file.
+     * @param date A date that defines the file that this csvString should apply change to.
+     * */
     public boolean updateDailyReportsFile(String csvString, String date) throws InternalError{
         List<CSVRecord> newRecords = getRecords(csvString);
         Collection<String> headers = getHeaders(newRecords);
@@ -129,6 +158,11 @@ public class CSVManager {
         return false;
     }
 
+    /**
+     * Query data from some file in the database.
+     * @param conditions Query conditions.
+     * @return a list of records that satisfied the conditions.
+     * */
     public List<CSVRecord> query(Conditions conditions) throws InternalError {
         if(conditions.getType() == DBType.TimeSeries){
             return getTimeSeriesQueryResult(conditions);
@@ -138,6 +172,10 @@ public class CSVManager {
         }
     }
 
+    /**
+     * Get all records from a file.
+     * @param f A CSV file.
+     * */
     public List<CSVRecord> getRecords(File f) throws InternalError {
         try{
             Reader r = new FileReader(f);
@@ -149,6 +187,10 @@ public class CSVManager {
         }
     }
 
+    /**
+     * Get all records from string.
+     * @param csvString A string with CSV format.
+     * */
     public List<CSVRecord> getRecords(String csvString) throws InternalError {
         try{
             Reader r = new StringReader(csvString);
@@ -160,7 +202,11 @@ public class CSVManager {
         }
     }
 
-    public Collection<String> getHeaders(List<CSVRecord> records) throws InternalError{
+    /**
+     * Get headers(fields) from records.
+     * @param records records from the same csv source.
+     * */
+    public Collection<String> getHeaders(List<CSVRecord> records){
         if(!records.isEmpty()){
             CSVRecord record = records.get(0);
             return record.getParser().getHeaderNames();
