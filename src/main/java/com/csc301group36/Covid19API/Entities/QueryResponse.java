@@ -6,6 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 @AllArgsConstructor
-public class Response {
+public class QueryResponse {
     private List<Map<String, String>> queryResult;
 }

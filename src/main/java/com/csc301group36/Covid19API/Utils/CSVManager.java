@@ -46,13 +46,16 @@ public class CSVManager {
         }catch (Exception e){throw new InternalError("Failed to create CSVPrinter.");}
     }
 
-    public void overrideTimeSeriesFile(String csvString, TimeSeriesRequestType type) throws InternalError{
+    public boolean overrideTimeSeriesFile(String csvString, TimeSeriesRequestType type) throws InternalError{
         List<CSVRecord> records = getRecords(csvString);
         if(csvFormatChecker.isValidTimeSeriesOverride(records)){
             dbManager.writeToTimeSeriesFile(csvString, type);
+            return true;
         }
+        return false;
     }
-    public void updateTimeSeriesFile(String csvString, TimeSeriesRequestType type) throws InternalError{
+    //TODO: need to deal with False return value when format is incorrect.
+    public boolean updateTimeSeriesFile(String csvString, TimeSeriesRequestType type) throws InternalError{
         List<CSVRecord> newRecords = getRecords(csvString);
         Collection<String> headers = getHeaders(newRecords);
         if(csvFormatChecker.isValidTimeSeriesUpdate(newRecords, headers)){
@@ -77,7 +80,9 @@ public class CSVManager {
                 printer.printRecords(mergedRecords);
                 dbManager.writeToTimeSeriesFile(writer.toString(), type);
             }catch (Exception e) {throw new InternalError("Database error(Failed to write to file.)");}
+            return true;
         }
+        return false;
     }
 
     public List<CSVRecord> query(Conditions conditions) throws InternalError {
@@ -111,7 +116,7 @@ public class CSVManager {
         }
     }
 
-    private Collection<String> getHeaders(List<CSVRecord> records) throws InternalError{
+    public Collection<String> getHeaders(List<CSVRecord> records) throws InternalError{
         if(!records.isEmpty()){
             CSVRecord record = records.get(0);
             return record.toMap().keySet();

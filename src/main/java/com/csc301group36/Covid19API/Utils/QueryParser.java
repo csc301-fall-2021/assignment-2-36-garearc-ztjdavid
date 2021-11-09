@@ -1,6 +1,6 @@
 package com.csc301group36.Covid19API.Utils;
 
-import com.csc301group36.Covid19API.Entities.Response;
+import com.csc301group36.Covid19API.Entities.QueryResponse;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ public class QueryParser {
         return "";
     }
 
-    public Response parseJSON(List<CSVRecord> records){
-        return new Response(null);
+    public QueryResponse parseJSON(List<CSVRecord> records){
+        return new QueryResponse(null);
     }
 }

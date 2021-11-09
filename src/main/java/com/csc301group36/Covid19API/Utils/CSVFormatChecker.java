@@ -52,6 +52,7 @@ public class CSVFormatChecker {
         if(!records.isEmpty()){
             CSVRecord record = records.get(0);
             try{
+                if(csvManager.getHeaders(records).size() != headers.size()) return false;
                 for(String header : headers){
                     record.get(header);
                 }
