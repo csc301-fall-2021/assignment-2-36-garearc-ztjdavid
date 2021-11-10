@@ -39,7 +39,7 @@ public class DailyReports {
         return response;
     }
 
-    @PostMapping(path = "/query/csv/{type}")
+    @GetMapping(path = "/query/csv/{type}")
     public ResponseEntity<String> queryCsvData(@PathVariable("type") String type,
                                                @RequestParam(name = "country", required = false) String country,
                                                @RequestParam(name = "state", required = false)String state,
@@ -55,7 +55,7 @@ public class DailyReports {
         return dataService.getCsvData(reqBody, type, DBType.DailyReports);
     }
 
-    @PostMapping (path = "/query/json/{type}", produces = "application/json")
+    @GetMapping (path = "/query/json/{type}", produces = "application/json")
     public List<Map<String, String>> queryJsonData(@PathVariable("type") String type,
                                                    @RequestParam(name = "country", required = false) String country,
                                                    @RequestParam(name = "state", required = false)String state,
