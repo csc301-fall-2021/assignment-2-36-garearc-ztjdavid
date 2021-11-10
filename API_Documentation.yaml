@@ -1,0 +1,346 @@
+---
+openapi: 3.0.0
+info:
+  title: CSC301 Group36 Covid API
+  description: This is a database processing API, which allows user to upload, update and query data from the existing database.
+  version: 1.0.0
+servers:
+- url: https://covid19api-group36.azurewebsites.net
+  description: Covid-19 Database
+- url: https://virtserver.swaggerhub.com/ZtjdavidGaredArc/CSC301A2CovidDatabase/1.0.0
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: timeSeries
+  description: Processing data with timeSeries database
+- name: dailyReport
+  description: Processing data with dailyReport database
+paths:
+  /api/timeSeries/overwrite/{type}:
+    post:
+      tags:
+      - timeSeries
+      summary: Overwrite data in timeSeries
+      description: Update and overwrite existing data in timeSeries. Any pre-existing data will be erased! If you only wish to modify the existing data, please refer to /timeSeries/update/.
+      operationId: overwrite
+      parameters:
+      - name: type
+        in: path
+        description: The type of data to overwrite, must be any one of the following, \{death, confirmed, active, recovered\}
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body'
+      responses:
+        "200":
+          description: overwrite executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        "400":
+          description: Request error occured
+        "404":
+          description: Internal error occured
+  /api/timeSeries/update/{type}:
+    post:
+      tags:
+      - timeSeries
+      summary: Update data in timeSeries
+      description: Update data in timeSeries. Pre-existing data in each row will be updated to the new inputed value.
+      operationId: Update
+      parameters:
+      - name: type
+        in: path
+        description: The type of data to update, must be any one of the following, \{death, confirmed, active, recovered\}
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body'
+      responses:
+        "200":
+          description: Update executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        "400":
+          description: Request error occured
+        "404":
+          description: Internal error occured
+  /api/timeSeries/query/csv/{type}:
+    get:
+      tags:
+      - timeSeries
+      summary: query data
+      description: Query data in timeSeries. Returning data in csv format.
+      operationId: queryTimeCsv
+      parameters:
+      - name: type
+        in: path
+        description: The type of data to query, must be any one of the following, \{death, confirmed, active, recovered\}
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: country
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: state
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: startDate
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: endDate
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: query executed successfully and returned required data in json format
+        "400":
+          description: Request error occured
+        "404":
+          description: Internal error occured
+  /api/timeSeries/query/Json/{type}:
+    get:
+      tags:
+      - timeSeries
+      summary: query data
+      description: query data in timeSeries. Returning data in json format.
+      operationId: queryTimeJson
+      parameters:
+      - name: type
+        in: path
+        description: The type of data to query, must be any one of the following, \{death, confirmed, active, recovered\}
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: country
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: state
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: startDate
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: endDate
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: query executed successfully and returned required data in json format
+        "400":
+          description: Request error occured
+        "404":
+          description: Internal error occured
+  /api/DailyReports/upload/{date}:
+    post:
+      tags:
+      - dailyReport
+      summary: Upload data into dailyReport
+      description: Upload data into dailyReport with the given date.
+      operationId: Upload
+      parameters:
+      - name: date
+        in: path
+        description: The date of data to upload, must be any one of the following must be in format yyyy-MM-dd
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body'
+      responses:
+        "200":
+          description: Upload executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        "400":
+          description: Request error occured
+        "404":
+          description: Internal error occured
+  /api/DailyReports/query/csv/{type}:
+    get:
+      tags:
+      - dailyReport
+      summary: query data
+      description: Query data in dailyReport. Returning data in csv format.
+      operationId: queryDailyCsv
+      parameters:
+      - name: type
+        in: path
+        description: The type of data to query, must be any one of the following, \{death, confirmed, active, recovered\}
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: country
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: state
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: combinedKeys
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: startDate
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: endDate
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Update executed successfully and returns requested data in Csv format
+        "400":
+          description: Request error occured
+        "404":
+          description: Internal error occured
+  /api/DailyReports/query/json/{type}:
+    get:
+      tags:
+      - dailyReport
+      summary: query data
+      description: Query data in dailyReport. Returning data in json format.
+      operationId: queryDailyJson
+      parameters:
+      - name: type
+        in: path
+        description: The type of data to query, must be any one of the following, \{death, confirmed, active, recovered\}
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: country
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: state
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: combinedKeys
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: startDate
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: endDate
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Update executed successfully and returns requested data in Json format
+        "400":
+          description: Request error occured
+        "404":
+          description: Internal error occured
+components:
+  schemas:
+    Response:
+      properties:
+        isCompleted:
+          type: boolean
+          example: true
+        description:
+          type: string
+          example: '{request} executed successfully'
+    Body:
+      properties:
+        data:
+          type: string
+          example: "Province/State,Country/Region,Lat,Long,1/22/20,1/23/20 \newline Northern Territory,Australia,-12.4634,130.8456,0,0"
