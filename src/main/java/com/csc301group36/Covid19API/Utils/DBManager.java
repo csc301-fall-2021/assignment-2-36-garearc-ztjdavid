@@ -36,7 +36,8 @@ public class DBManager {
     public File getTimeSeriesFile(TimeSeriesRequestType type) throws InternalError {
         File f = new File(getFilePath(timeSeriesDirName, type.fileName));
         if(!f.exists()) {
-            throw new InternalError("We do not have corresponding database now. Please upload csv data first.");
+            throw new InternalError("We do not have corresponding database now. " +
+                    "Please upload csv data first. Database: " +  f.getName());
         }
         return f;
     }

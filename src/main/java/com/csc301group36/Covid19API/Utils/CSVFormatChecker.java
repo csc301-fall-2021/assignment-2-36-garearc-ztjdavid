@@ -19,8 +19,8 @@ public class CSVFormatChecker {
     @Autowired
     private DateUtils dateUtils;
 
-    private final List<String> timeSeriesOverrideHeaders = Arrays.asList("Province/State", "Country/Region", "Lat", "Long");
-    private final List<String> dailyReportsHeaders = Arrays.asList(
+    public final List<String> timeSeriesOverrideHeaders = Arrays.asList("Province/State", "Country/Region", "Lat", "Long");
+    public final List<String> dailyReportsHeaders = Arrays.asList(
             "FIPS", "Admin2", "Province_State", "Country_Region", "Last_Update", "Lat", "Long_",
             "Confirmed", "Deaths", "Recovered", "Active", "Combined_Key", "Incidence_Rate", "Case-Fatality_Ratio");
 

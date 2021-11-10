@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class CSVManager {
@@ -113,10 +114,31 @@ public class CSVManager {
      * */
     public List<CSVRecord> query(Conditions conditions) throws InternalError {
         if(conditions.getType() == DBType.TimeSeries){
-            return getTimeSeriesQueryResult(conditions);
+
+            if(conditions.getTimeSeriesRequestType() == TimeSeriesRequestType.active){
+                // Get death
+                conditions.setTimeSeriesRequestType(TimeSeriesRequestType.death);
+                List<CSVRecord> recordsDeath = getTimeSeriesQueryResult(conditions);
+                // Get confirmed
+                conditions.setTimeSeriesRequestType(TimeSeriesRequestType.confirmed);
+                List<CSVRecord> recordsConfirmed = getTimeSeriesQueryResult(conditions);
+                // Get recovered
+                conditions.setTimeSeriesRequestType(TimeSeriesRequestType.recovered);
+                List<CSVRecord> recordsRecovered = getTimeSeriesQueryResult(conditions);
+                List<String> dateHeaders = getTimeSeriesDateHeadersInRange(conditions,
+                        getBottleneckRecords(recordsDeath, recordsConfirmed, recordsRecovered));
+                return buildTimeSeriesQueryRecordsActive(recordsDeath, recordsConfirmed, recordsRecovered, dateHeaders);
+
+            }else{
+                List<CSVRecord> records = getTimeSeriesQueryResult(conditions);
+                List<String> dateHeaders = getTimeSeriesDateHeadersInRange(conditions, records);
+                return buildTimeSeriesQueryRecordsOther(records, dateHeaders);
+            }
         }
         else{
-            return getDailyReportQueryResult(conditions);
+            return buildDailyReportsRecords(getDailyReportQueryResult(conditions),
+                    Collections.singletonList(conditions.getDailyReportRequestType().colName));
+
         }
     }
 
@@ -177,7 +199,7 @@ public class CSVManager {
     }
 
     private List<CSVRecord> getDailyReportQueryResult(Conditions conditions) throws InternalError {
-        List<File> fs = getFilesByRange(conditions);
+        List<File> fs = getDailyReportFilesByRange(conditions);
         List<CSVRecord> result = new ArrayList<>();
         for(File f : fs){
             List<CSVRecord> records = getRecords(f);
@@ -188,7 +210,7 @@ public class CSVManager {
         return result;
     }
 
-    private List<File> getFilesByRange(Conditions conditions) throws InternalError {
+    private List<File> getDailyReportFilesByRange(Conditions conditions) throws InternalError {
         Date startD = dateUtils.stringToDate(conditions.getStartDate(), conditions.getType());
         Date endD = dateUtils.stringToDate(conditions.getEndDate(), conditions.getType());
         List<File> result = new ArrayList<>();
@@ -262,5 +284,85 @@ public class CSVManager {
             printer.printRecords(mergedRecords);
             dbManager.writeToTimeSeriesFile(writer.toString(), type);
         }catch (Exception e) {throw new InternalError("Database error(Failed to write to file.)");}
+    }
+
+    private List<CSVRecord> buildTimeSeriesQueryRecordsOther(List<CSVRecord> records, List<String> queryHeaders) throws InternalError{
+        List<String> headers = new ArrayList<>(csvFormatChecker.timeSeriesOverrideHeaders);
+        return buildRecordsHelper(headers, records, queryHeaders);
+    }
+
+    private List<CSVRecord> buildTimeSeriesQueryRecordsActive(List<CSVRecord> recordsDeath,
+                                                              List<CSVRecord> recordsConfirmed,
+                                                              List<CSVRecord> recordsRecovered,
+                                                              List<String> queryHeaders) throws InternalError{
+        List<String> headers = new ArrayList<>(csvFormatChecker.timeSeriesOverrideHeaders);
+        headers.addAll(queryHeaders);
+        StringWriter writer = new StringWriter();
+        CSVPrinter printer = getPrinter(headers, writer);
+        // print records
+        try{
+            for(int i=0; i < recordsDeath.size(); i++){
+                List<String> temp1 = csvFormatChecker.timeSeriesOverrideHeaders.stream()
+                        .map(recordsDeath.get(i)::get)
+                        .collect(Collectors.toList());
+                List<String> temp2 = new ArrayList<>();
+                for(String qheader : queryHeaders){
+                    int active = Integer.parseInt(recordsConfirmed.get(i).get(qheader)) -
+                            Integer.parseInt(recordsDeath.get(i).get(qheader)) -
+                            Integer.parseInt(recordsRecovered.get(i).get(qheader));
+                    temp2.add(Integer.toString(active));
+                }
+                temp1.addAll(temp2);
+                printer.printRecord(temp1);
+            }
+        }catch (Exception E){ throw new InternalError("Cannot extract fields from records.");}
+        return getRecords(writer.toString());
+    }
+
+    private List<CSVRecord> buildDailyReportsRecords(List<CSVRecord> records, List<String> queryHeaders) throws InternalError{
+
+        List<String> headers = new ArrayList<>(Arrays.asList("FIPS", "Admin2", "Province_State",
+                "Country_Region", "Last_Update", "Lat", "Long_","Combined_Key", "Incidence_Rate",
+                "Case-Fatality_Ratio"));
+        return buildRecordsHelper(headers, records, queryHeaders);
+    }
+
+    private List<CSVRecord> buildRecordsHelper(List<String> headers, List<CSVRecord> records, List<String> queryHeaders) throws InternalError{
+        headers.addAll(queryHeaders);
+        StringWriter writer = new StringWriter();
+        CSVPrinter printer = getPrinter(headers, writer);
+
+        // print records
+        try{
+            for(CSVRecord record : records){
+                List<String> temp = headers.stream().map(record::get).collect(Collectors.toList());
+                printer.printRecord(temp);
+            }
+        }catch (Exception E){ throw new InternalError("Cannot extract fields from records.");}
+        return getRecords(writer.toString());
+    }
+
+    private List<String> getTimeSeriesDateHeadersInRange(Conditions conditions, List<CSVRecord> records) throws InternalError{
+        Date startD = dateUtils.stringToDate(conditions.getStartDate(), conditions.getType());
+        Date endD = dateUtils.stringToDate(conditions.getEndDate(), conditions.getType());
+        List<String> result = new ArrayList<>();
+        List<String> headers = new ArrayList<>(getHeaders(records));
+        for(int i=4; i < headers.size(); i++){
+            if(dateUtils.isInBetween(startD, endD, dateUtils.stringToDate(headers.get(i), DBType.TimeSeries))){
+                result.add(headers.get(i));
+            }
+        }
+        return result;
+    }
+
+    private List<CSVRecord> getBottleneckRecords(List<CSVRecord> a,
+                                                 List<CSVRecord> b,
+                                                 List<CSVRecord> c){
+        int ac = 0, bc = 0, cc = 0;
+        if(!a.isEmpty()) ac = getHeaders(a).size();
+        if(!a.isEmpty()) bc = getHeaders(b).size();
+        if(!a.isEmpty()) cc = getHeaders(c).size();
+        int max = Collections.max(Arrays.asList(ac, bc, cc));
+        return (max == ac)? a : (max == bc)? b : c;
     }
 }
