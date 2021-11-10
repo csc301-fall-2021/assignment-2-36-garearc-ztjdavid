@@ -2,12 +2,12 @@ package com.csc301group36.Covid19API.Exceptions;
 
 public class InvalidDataTypeError extends InternalError {
 
-    public InvalidDataTypeError(String record, String filename) {
+    public InvalidDataTypeError(String record, String field) {
         super("We found an invalid data(row) in the database: " +
-                record + "\n" + "In database: "+ filename);
+                record + "\n" + "In field: "+ field);
     }
-    public InvalidDataTypeError(String record, String filename, int code) {
+    public InvalidDataTypeError(String record, String field, int code) {
         super("We found an invalid data(row) in the database: " +
-                record + "\n" + "In database: "+ filename, code);
+                record + "\n" + "In field: "+ field, code);
     }
 }

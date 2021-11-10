@@ -1,12 +1,15 @@
 package com.csc301group36.Covid19API.Utils;
 
 import com.csc301group36.Covid19API.Entities.DBType;
+import com.csc301group36.Covid19API.Entities.DailyReportRequestType;
 import com.csc301group36.Covid19API.Exceptions.InternalError;
+import com.csc301group36.Covid19API.Exceptions.InvalidDataTypeError;
 import lombok.NoArgsConstructor;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -84,5 +87,40 @@ public class CSVFormatChecker {
             }
         }
         return true;
+    }
+
+    private boolean hasValidNumberFields(DBType type, List<CSVRecord> records) throws InternalError{
+        if(type == DBType.TimeSeries){
+            List<String> headers = new ArrayList<>(csvManager.getHeaders(records));
+            for(CSVRecord record : records){
+                for(int i = 4; i < headers.size(); i++){
+                    try{
+                        Integer.parseInt(record.get(headers.get(i)));
+                    }catch (NumberFormatException nfe){
+                        throw new InvalidDataTypeError(record.toList().toString(), headers.get(i));
+                    }catch (IllegalArgumentException iie){
+                        throw new InternalError("Invalid CSV format.");
+                    }
+                }
+            }
+            return true;
+        }else{
+            List<String> fields = Arrays.asList(DailyReportRequestType.confirmed.colName,
+                    DailyReportRequestType.death.colName,
+                    DailyReportRequestType.active.colName,
+                    DailyReportRequestType.recovered.colName);
+            for (CSVRecord record : records){
+                for(String field : fields){
+                    try{
+                        Integer.parseInt(record.get(field));
+                    }catch (NumberFormatException nfe){
+                        throw new InvalidDataTypeError(record.toList().toString(), field);
+                    }catch (IllegalArgumentException iie){
+                        throw new InternalError("Invalid CSV format.");
+                    }
+                }
+            }
+            return true;
+        }
     }
 }

@@ -315,7 +315,11 @@ public class CSVManager {
                 temp1.addAll(temp2);
                 printer.printRecord(temp1);
             }
-        }catch (Exception E){ throw new InternalError("Cannot extract fields from records.");}
+        }catch(NumberFormatException ne){
+            throw new InternalError("We found a data that cannot be parsed into integer. Please update a correct csv file.");
+        }catch(IllegalArgumentException iie){
+            throw new InternalError("Dates in time series files do not match.");
+        }catch (Exception e){ throw new InternalError("Cannot extract fields from records.");}
         return getRecords(writer.toString());
     }
 
