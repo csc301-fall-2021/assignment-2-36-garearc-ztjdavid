@@ -1,8 +1,7 @@
 package com.csc301group36.Covid19API.Services;
 
-import com.csc301group36.Covid19API.Entities.Conditions;
-import com.csc301group36.Covid19API.Entities.DBType;
-import com.csc301group36.Covid19API.Entities.ReqBody;
+import com.csc301group36.Covid19API.Controllers.TimeSeries;
+import com.csc301group36.Covid19API.Entities.*;
 import com.csc301group36.Covid19API.Exceptions.InternalError;
 import com.csc301group36.Covid19API.Exceptions.InvalidDataTypeError;
 import com.csc301group36.Covid19API.Utils.CSVManager;
@@ -14,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
-import com.csc301group36.Covid19API.Entities.TimeSeriesRequestType;
 import com.csc301group36.Covid19API.Exceptions.RequestError;
 import com.csc301group36.Covid19API.Utils.DateUtils;
 import org.springframework.stereotype.Service;
@@ -31,9 +29,10 @@ public class DataService {
     QueryParser queryParser;
 
 
-    public Conditions processInput(ReqBody reqBody, String type) throws RequestError {
+    public Conditions processInput(ReqBody reqBody, String type, DBType dbType) throws RequestError {
         Conditions conditions = new Conditions();
         conditions.setCountry(reqBody.getCountry());
+        conditions.setState(reqBody.getState());
         conditions.setCombinedKeys(reqBody.getCombinedKeys());
         if ((!dateUtils.isValidDate(reqBody.getEndDate(), dbType)) ||
                 (!dateUtils.isValidDate(reqBody.getStartDate(), dbType))) {
@@ -42,8 +41,12 @@ public class DataService {
         }
         conditions.setEndDate(reqBody.getEndDate());
         conditions.setStartDate(reqBody.getStartDate());
-        conditions.setType(DBType.TimeSeries);
-        conditions.setTimeSeriesRequestType(parseTimeRequestType(type));
+        conditions.setType(dbType);
+        if(dbType == DBType.TimeSeries){
+            conditions.setTimeSeriesRequestType(parseTimeRequestType(type));
+        }else{
+            conditions.setDailyReportRequestType(parseDailyRequestType(type));
+        }
 
         return conditions;
     }
@@ -61,6 +64,21 @@ public class DataService {
             default:
                 throw new RequestError("Input type: " + type + " is not identified");
         }
+    }
+
+    public DailyReportRequestType parseDailyRequestType(String type) throws RequestError {
+        switch (type) {
+            case "death":
+                return DailyReportRequestType.death;
+            case "confirmed":
+                return DailyReportRequestType.confirmed;
+            case "active":
+                return DailyReportRequestType.active;
+            case "recovered":
+                return DailyReportRequestType.recovered;
+            default:
+                throw new RequestError("Input type: " + type + " is not identified");
+        }
 
     }
 
@@ -70,13 +88,15 @@ public class DataService {
         }
     }
 
-    public ResponseEntity<String> getCsvData(ReqBody reqBody, String type)throws InternalError, RequestError{
+    public ResponseEntity<String> getCsvData(ReqBody reqBody, String type, DBType dbType)throws InternalError, RequestError{
         HttpHeaders header = new HttpHeaders();
         header.setContentType(MediaType.TEXT_PLAIN);
-        Conditions conditions = processInput(reqBody, type);
+        Conditions conditions = processInput(reqBody, type, dbType);
         List<CSVRecord> records = csvManager.query(conditions);
         String queriedData = queryParser.parseCSV(records);
         return new ResponseEntity<>(queriedData, header, HttpStatus.OK);
     }
+
+
 
 }

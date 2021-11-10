@@ -41,7 +41,7 @@ public class DailyReports {
 
     @GetMapping(path = "/query/csv/{type}")
     public ResponseEntity<String> queryCsvData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
-        return dataService.getCsvData(reqBody, type);
+        return dataService.getCsvData(reqBody, type, DBType.DailyReports);
     }
 
     @GetMapping (path = "/query/json/{type}", produces = "application/json")
