@@ -50,12 +50,12 @@ public class TimeSeries {
         return response;
     }
 
-    @GetMapping(path = "/query/csv/{type}")
+    @PostMapping(path = "/query/csv/{type}")
     public ResponseEntity<String> queryData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
         return dataService.getCsvData(reqBody, type, DBType.TimeSeries);
     }
 
-    @GetMapping(path = "/query/json/{type}")
+    @PostMapping(path = "/query/json/{type}")
     public List<Map<String, String>> queryJsonData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
         Conditions conditions = dataService.processInput(reqBody, type, DBType.TimeSeries);
         List<CSVRecord> records = csvManager.query(conditions);

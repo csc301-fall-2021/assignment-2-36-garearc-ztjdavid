@@ -39,12 +39,12 @@ public class DailyReports {
         return response;
     }
 
-    @GetMapping(path = "/query/csv/{type}")
+    @PostMapping(path = "/query/csv/{type}")
     public ResponseEntity<String> queryCsvData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
         return dataService.getCsvData(reqBody, type, DBType.DailyReports);
     }
 
-    @GetMapping (path = "/query/json/{type}", produces = "application/json")
+    @PostMapping (path = "/query/json/{type}", produces = "application/json")
     public List<Map<String, String>> queryJsonData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
         Conditions conditions = dataService.processInput(reqBody, type, DBType.DailyReports);
         List<CSVRecord> records = csvManager.query(conditions);
