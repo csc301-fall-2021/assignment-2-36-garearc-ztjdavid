@@ -74,7 +74,7 @@ public class CSVFormatChecker {
             }catch (Exception e) {throw new InternalError("Records are not consistent with fields, please check your csv format.");}
             return true;
         }
-        return false;
+        throw new InternalError("No record found in csv.");
     }
 
     private boolean hasValidDateFields(List<CSVRecord> records) throws InternalError{
@@ -82,7 +82,7 @@ public class CSVFormatChecker {
         for(String header : headers){
             if(timeSeriesOverrideHeaders.contains(header)) continue;
             try{
-                if(!dateUtils.isValidDate(header, DBType.TimeSeries)) return false;
+                if(!dateUtils.isValidDate(header, DBType.TimeSeries)) throw new InternalError("Invalid date format: " + header);
             }catch (Exception e){
                 throw new InternalError("Operation denied. We found some field(s) with wrong date format.");
             }
