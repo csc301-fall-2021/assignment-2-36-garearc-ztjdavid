@@ -40,12 +40,34 @@ public class DailyReports {
     }
 
     @PostMapping(path = "/query/csv/{type}")
-    public ResponseEntity<String> queryCsvData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
+    public ResponseEntity<String> queryCsvData(@PathVariable("type") String type,
+                                               @RequestParam(name = "country", required = false) String country,
+                                               @RequestParam(name = "state", required = false)String state,
+                                               @RequestParam(name = "combinedKeys", required = false) String combinedKeys,
+                                               @RequestParam(name = "startDate", required = false) String startDate,
+                                               @RequestParam(name = "endDate", required = false) String endDate) throws InternalError, RequestError{
+        ReqBody reqBody = new ReqBody();
+        reqBody.setCountry(country);
+        reqBody.setState(state);
+        reqBody.setEndDate(endDate);
+        reqBody.setCombinedKeys(combinedKeys);
+        reqBody.setStartDate(startDate);
         return dataService.getCsvData(reqBody, type, DBType.DailyReports);
     }
 
     @PostMapping (path = "/query/json/{type}", produces = "application/json")
-    public List<Map<String, String>> queryJsonData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
+    public List<Map<String, String>> queryJsonData(@PathVariable("type") String type,
+                                                   @RequestParam(name = "country", required = false) String country,
+                                                   @RequestParam(name = "state", required = false)String state,
+                                                   @RequestParam(name = "combinedKeys", required = false) String combinedKeys,
+                                                   @RequestParam(name = "startDate", required = false) String startDate,
+                                                   @RequestParam(name = "endDate", required = false) String endDate) throws InternalError, RequestError{
+        ReqBody reqBody = new ReqBody();
+        reqBody.setCountry(country);
+        reqBody.setState(state);
+        reqBody.setEndDate(endDate);
+        reqBody.setCombinedKeys(combinedKeys);
+        reqBody.setStartDate(startDate);
         Conditions conditions = dataService.processInput(reqBody, type, DBType.DailyReports);
         List<CSVRecord> records = csvManager.query(conditions);
         return queryParser.parseJSON(records);
