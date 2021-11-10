@@ -2,6 +2,7 @@ package com.csc301group36.Covid19API.Utils;
 
 import com.csc301group36.Covid19API.Entities.TimeSeriesRequestType;
 import com.csc301group36.Covid19API.Exceptions.InternalError;
+import org.apache.tomcat.jni.Directory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ public class DBManager {
 
     private DBManager(){
         initFolders();
+        initMap();
     }
 
     public void writeToTimeSeriesFile(String content, TimeSeriesRequestType type) throws InternalError{
@@ -26,7 +28,7 @@ public class DBManager {
     }
 
     public void writeToDailyReportsFile(String content, String date) throws InternalError{
-        String path = getFilePath(dailyReportsDirName, dateToDaily.get(date));
+        String path = getFilePath(dailyReportsDirName, date);
         dateToDaily.put(date, path);
         writeContentToFile(content, path);
     }
@@ -42,7 +44,7 @@ public class DBManager {
 
     public File getDailyFile(String date) throws InternalError {
         if(dateToDaily.containsKey(date)){
-            File f = new File(getFilePath(dailyReportsDirName, dateToDaily.get(date)));
+            File f = new File(getFilePath(dailyReportsDirName, date));
             if(!f.exists()) {
                 throw new InternalError("We do not have corresponding database now. Please upload csv data first.");
             }
@@ -53,6 +55,15 @@ public class DBManager {
 
     public List<String> getDailyFileDates(){
         return new ArrayList<>(dateToDaily.keySet());
+    }
+
+    public boolean existsTimeSeries(TimeSeriesRequestType type){
+        File f = new File(getFilePath(timeSeriesDirName, type.fileName));
+        return f.exists();
+    }
+
+    public boolean existsDailyReports(String date){
+        return getDailyFileDates().contains(date);
     }
 
     public void writeContentToFile(String content, String filepath) throws InternalError{
@@ -75,7 +86,20 @@ public class DBManager {
         new File(dailyReportsDirName).mkdirs();
     }
 
+    private void initMap(){
+        File dailyReportsDir = new File(dailyReportsDirName);
+        File[] files = dailyReportsDir.listFiles();
+        if(files != null){
+            for(File file : files){
+                if(file.isFile()){
+                    String name = file.getName().replaceFirst("[.][^.]+$", "");
+                    dateToDaily.put(name, name);
+                }
+            }
+        }
+    }
+
     private String getFilePath(String dirName, String fileName){
-        return "/" + dirName + "/" + fileName + ".csv";
+        return dirName + "/" + fileName + ".csv";
     }
 }

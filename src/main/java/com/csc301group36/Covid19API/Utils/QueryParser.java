@@ -36,15 +36,15 @@ public class QueryParser {
     }
 
     /**
-     * Parse a list of records into a {@link com.csc301group36.Covid19API.Entities.QueryResponse} that can be
+     * Parse a list of records so that they can be
      * returned as JSON format.
      * @param records a list of records <strong>from the same CSV source</strong>.
      * */
-    public QueryResponse parseJSON(List<CSVRecord> records){
+    public List<Map<String, String>> parseJSON(List<CSVRecord> records){
         List<Map<String, String>> queryResult = new ArrayList<>();
         for(CSVRecord record : records){
             queryResult.add(record.toMap());
         }
-        return new QueryResponse(queryResult);
+        return queryResult;
     }
 }

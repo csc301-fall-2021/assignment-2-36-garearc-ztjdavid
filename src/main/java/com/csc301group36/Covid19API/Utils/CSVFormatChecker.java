@@ -22,7 +22,7 @@ public class CSVFormatChecker {
     private final List<String> timeSeriesOverrideHeaders = Arrays.asList("Province/State", "Country/Region", "Lat", "Long");
     private final List<String> dailyReportsHeaders = Arrays.asList(
             "FIPS", "Admin2", "Province_State", "Country_Region", "Last_Update", "Lat", "Long_",
-            "Confirmed", "Deaths", "Recovered", "Active", "Combined_Key", "Incident_Rate", "Case_Fatality_Ratio");
+            "Confirmed", "Deaths", "Recovered", "Active", "Combined_Key", "Incidence_Rate", "Case-Fatality_Ratio");
 
     public boolean isValidTimeSeriesOverride(List<CSVRecord> records) throws InternalError{
         return isValidTimeSeriesOverrideHelper(records);
@@ -46,7 +46,12 @@ public class CSVFormatChecker {
     }
 
     private boolean isValidTimeSeriesOverrideHelper(List<CSVRecord> records) throws InternalError{
-        return formatCheckHelper(records, timeSeriesOverrideHeaders) && hasValidDateFields(records);
+        Collection<String> newHeaders = csvManager.getHeaders(records);
+        for(String header : timeSeriesOverrideHeaders){
+            if(!newHeaders.contains(header)) throw new InternalError("Invalid CSV format. Fields must contain at least: "
+                    + timeSeriesOverrideHeaders.toString());
+        }
+        return hasValidDateFields(records);
     }
 
     private boolean formatCheckHelper(List<CSVRecord> records, Collection<String> headers) throws InternalError{

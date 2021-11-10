@@ -26,7 +26,7 @@ public class DateUtils {
     }
 
     public boolean isInBetween(Date start, Date end, Date target){
-        return target.before(end) && target.after(start);
+        return target.equals(start) || target.equals(end) || target.before(end) && target.after(start);
     }
 
     public boolean isValidDate(String d, DBType dbType){

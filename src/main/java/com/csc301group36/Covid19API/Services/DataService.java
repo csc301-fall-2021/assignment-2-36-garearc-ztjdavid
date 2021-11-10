@@ -35,10 +35,10 @@ public class DataService {
         Conditions conditions = new Conditions();
         conditions.setCountry(reqBody.getCountry());
         conditions.setCombinedKeys(reqBody.getCombinedKeys());
-        if ((!dateUtils.isValidDate(reqBody.getEndDate(), DBType.TimeSeries)) ||
-                (!dateUtils.isValidDate(reqBody.getStartDate(), DBType.TimeSeries))) {
-            throw new RequestError("Either Start Date:" + reqBody.getStartDate() + " " +
-                    "or End Date:" + reqBody.getEndDate() + " is incorrectly formated");
+        if ((!dateUtils.isValidDate(reqBody.getEndDate(), dbType)) ||
+                (!dateUtils.isValidDate(reqBody.getStartDate(), dbType))) {
+            throw new RequestError("Either Start Date: " + reqBody.getStartDate() + " " +
+                    "or End Date: " + reqBody.getEndDate() + " is incorrectly formatted.");
         }
         conditions.setEndDate(reqBody.getEndDate());
         conditions.setStartDate(reqBody.getStartDate());
@@ -59,14 +59,14 @@ public class DataService {
             case "recovered":
                 return TimeSeriesRequestType.recovered;
             default:
-                throw new RequestError("Input type:" + type + " is not identified");
+                throw new RequestError("Input type: " + type + " is not identified");
         }
 
     }
 
     public void validateTime(String date) throws RequestError {
         if (!dateUtils.isValidDate(date, DBType.DailyReports)) {
-            throw new RequestError("Date:" + date + " is incorrectly formatted!");
+            throw new RequestError("Date: " + date + " is incorrectly formatted!");
         }
     }
 

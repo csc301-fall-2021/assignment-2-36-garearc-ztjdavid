@@ -68,9 +68,9 @@ public class CSVManager {
     }
     /**
      * Update a TimeSeries file.
-     * <p>A file will be updated by two ways: </p>
-     * <p>1. Append: Any record that does not match all records in old file will be appended.</p>
-     * <p>2. Replace: Any record that matches a record in the old file will replace the old record.</p>
+     * <p>A file will be updated in two ways: </p>
+     * <p>1. Append: Any record that does not match all records in old file will be added.</p>
+     * <p>2. Replace: Any record that matches a record in the old file will replace that old record.</p>
      * @param csvString The CSV string containing records that will be inserted into the file.
      * @param type A {@link com.csc301group36.Covid19API.Entities.TimeSeriesRequestType} that defines which
      * file it should apply the change to.
@@ -80,32 +80,8 @@ public class CSVManager {
         List<CSVRecord> newRecords = getRecords(csvString);
         Collection<String> headers = getHeaders(newRecords);
         if(csvFormatChecker.isValidTimeSeriesUpdate(newRecords, headers)){
-            List<CSVRecord> oldRecords = getRecords(dbManager.getTimeSeriesFile(type));
-            // Insert all oldRecords first
-            List<CSVRecord> mergedRecords = new ArrayList<>(oldRecords);
-            try {
-                // merge records by replacing oldRecords
-                for(CSVRecord newRecord : newRecords){
-                    boolean replaced = false;
-                    for(CSVRecord oldRecord : oldRecords){
-                        if(newRecord.get("Province/State").equals(oldRecord.get("Province/State")) &&
-                                newRecord.get("Country/Region").equals(oldRecord.get("Country/Region")) &&
-                                newRecord.get("Lat").equals(oldRecord.get("Lat")) &&
-                                newRecord.get("Long").equals(oldRecord.get("Long"))
-                        ){
-                            mergedRecords.set(mergedRecords.indexOf(oldRecord), newRecord);
-                            replaced = true;
-                            break;
-                        }
-                    }
-                    if(!replaced) mergedRecords.add(newRecord);
-                }
-                // Write merged records into StringWriter
-                StringWriter writer = new StringWriter();
-                CSVPrinter printer = getPrinter(headers, writer);
-                printer.printRecords(mergedRecords);
-                dbManager.writeToTimeSeriesFile(writer.toString(), type);
-            }catch (Exception e) {throw new InternalError("Database error(Failed to write to file.)");}
+            if(dbManager.existsTimeSeries(type)) updateExistingTimeSeriesFile(type, newRecords, headers);
+            else dbManager.writeToTimeSeriesFile(csvString, type);
             return true;
         }
         return false;
@@ -113,9 +89,9 @@ public class CSVManager {
 
     /**
      * Update a dailyReports file.
-     * <p>A file will be updated by two ways: </p>
-     * <p>1. Append: Any record that does not match all records in old file will be appended.</p>
-     * <p>2. Replace: Any record that matches a record in the old file will replace the old record.</p>
+     * <p>A file will be updated in two ways: </p>
+     * <p>1. Append: Any record that does not match all records in old file will be added.</p>
+     * <p>2. Replace: Any record that matches a record in the old file will replace that old record.</p>
      * @param csvString The CSV string containing records that will be inserted into the file.
      * @param date A date that defines the file that this csvString should apply change to.
      * */
@@ -123,37 +99,9 @@ public class CSVManager {
         List<CSVRecord> newRecords = getRecords(csvString);
         Collection<String> headers = getHeaders(newRecords);
         if(csvFormatChecker.isValidDailyReports(newRecords)){
-            List<CSVRecord> oldRecords = getRecords(dbManager.getDailyFile(date));
-            // Insert all oldRecords first
-            List<CSVRecord> mergedRecords = new ArrayList<>(oldRecords);
-            try {
-                // merge records by replacing oldRecords
-                for(CSVRecord newRecord : newRecords){
-                    boolean replaced = false;
-                    for(CSVRecord oldRecord : oldRecords){
-                        if(newRecord.get("FIPS").equals(oldRecord.get("FIPS")) &&
-                                newRecord.get("Admin2").equals(oldRecord.get("Admin2")) &&
-                                newRecord.get("Province_State").equals(oldRecord.get("Province_State")) &&
-                                newRecord.get("Country_Region").equals(oldRecord.get("Country_Region")) &&
-                                newRecord.get("Combined_Key").equals(oldRecord.get("Combined_Key"))
-                        ){
-                            mergedRecords.set(mergedRecords.indexOf(oldRecord), newRecord);
-                            replaced = true;
-                            break;
-                        }
-                    }
-                    if(!replaced) mergedRecords.add(newRecord);
-                }
-                // Write merged records into StringWriter
-                StringWriter writer = new StringWriter();
-                CSVPrinter printer = getPrinter(headers, writer);
-                printer.printRecords(mergedRecords);
-                dbManager.writeToDailyReportsFile(writer.toString(), date);
-            }catch (IOException ioe) {
-                throw new InternalError("Database error(Failed to write to file.)");
-            }catch (Exception e){
-                throw new InternalError("Failed to load fields.");
-            }
+            if(dbManager.existsDailyReports(date)) updateExistingDailyReportsFile(date, newRecords, headers);
+            else dbManager.writeToDailyReportsFile(csvString, date);
+            return true;
         }
         return false;
     }
@@ -251,4 +199,68 @@ public class CSVManager {
         return result;
     }
 
+    private void updateExistingDailyReportsFile(String date, List<CSVRecord> newRecords, Collection<String> headers)throws InternalError{
+        List<CSVRecord> oldRecords = getRecords(dbManager.getDailyFile(date));
+        // Insert all oldRecords first
+        List<CSVRecord> mergedRecords = new ArrayList<>(oldRecords);
+        try {
+            // merge records by replacing oldRecords
+            for(CSVRecord newRecord : newRecords){
+                boolean replaced = false;
+                for(CSVRecord oldRecord : oldRecords){
+                    if(newRecord.get("FIPS").equals(oldRecord.get("FIPS")) &&
+                            newRecord.get("Admin2").equals(oldRecord.get("Admin2")) &&
+                            newRecord.get("Province_State").equals(oldRecord.get("Province_State")) &&
+                            newRecord.get("Country_Region").equals(oldRecord.get("Country_Region")) &&
+                            newRecord.get("Combined_Key").equals(oldRecord.get("Combined_Key"))
+                    ){
+                        mergedRecords.set(mergedRecords.indexOf(oldRecord), newRecord);
+                        replaced = true;
+                        break;
+                    }
+                }
+                if(!replaced) mergedRecords.add(newRecord);
+            }
+            // Write merged records into StringWriter
+            StringWriter writer = new StringWriter();
+            CSVPrinter printer = getPrinter(headers, writer);
+            printer.printRecords(mergedRecords);
+            dbManager.writeToDailyReportsFile(writer.toString(), date);
+        }catch (IOException ioe) {
+            throw new InternalError("Database error(Failed to write to file.)");
+        }catch (Exception e){
+            throw new InternalError("Failed to load fields.");
+        }
+    }
+
+    private void updateExistingTimeSeriesFile(TimeSeriesRequestType type,
+                                              List<CSVRecord> newRecords,
+                                              Collection<String> headers)throws InternalError{
+        List<CSVRecord> oldRecords = getRecords(dbManager.getTimeSeriesFile(type));
+        // Insert all oldRecords first
+        List<CSVRecord> mergedRecords = new ArrayList<>(oldRecords);
+        try {
+            // merge records by replacing oldRecords
+            for(CSVRecord newRecord : newRecords){
+                boolean replaced = false;
+                for(CSVRecord oldRecord : oldRecords){
+                    if(newRecord.get("Province/State").equals(oldRecord.get("Province/State")) &&
+                            newRecord.get("Country/Region").equals(oldRecord.get("Country/Region")) &&
+                            newRecord.get("Lat").equals(oldRecord.get("Lat")) &&
+                            newRecord.get("Long").equals(oldRecord.get("Long"))
+                    ){
+                        mergedRecords.set(mergedRecords.indexOf(oldRecord), newRecord);
+                        replaced = true;
+                        break;
+                    }
+                }
+                if(!replaced) mergedRecords.add(newRecord);
+            }
+            // Write merged records into StringWriter
+            StringWriter writer = new StringWriter();
+            CSVPrinter printer = getPrinter(headers, writer);
+            printer.printRecords(mergedRecords);
+            dbManager.writeToTimeSeriesFile(writer.toString(), type);
+        }catch (Exception e) {throw new InternalError("Database error(Failed to write to file.)");}
+    }
 }

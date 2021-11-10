@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-
+import java.util.Map;
 
 
 @RestController
@@ -44,9 +44,9 @@ public class DailyReports {
         return dataService.getCsvData(reqBody, type);
     }
 
-    @GetMapping (path = "/query/json/{type}")
-    public QueryResponse queryJsonData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
-        Conditions conditions = dataService.processInput(reqBody, type);
+    @GetMapping (path = "/query/json/{type}", produces = "application/json")
+    public List<Map<String, String>> queryJsonData(@RequestBody ReqBody reqBody, @PathVariable("type") String type) throws InternalError, RequestError{
+        Conditions conditions = dataService.processInput(reqBody, type, DBType.DailyReports);
         List<CSVRecord> records = csvManager.query(conditions);
         return queryParser.parseJSON(records);
     }
