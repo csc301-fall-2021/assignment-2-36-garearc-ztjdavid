@@ -26,15 +26,20 @@ public class DailyReports {
     QueryParser queryParser;
 
     @PostMapping(path = "/upload/{date}")
-    public Response upload(@RequestBody String data, @PathVariable("date") String date) throws InternalError, RequestError {
+    public Response upload(@RequestBody String data, @PathVariable("date") String date) throws RequestError {
         Response response = new Response();
         dataService.validateTime(date);
-        if(csvManager.updateDailyReportsFile(data, date)){
-            response.setCompleted(true);
-            response.setDescription("Upload successfully executed");
-        }else{
+        try{
+            if(csvManager.updateDailyReportsFile(data, date)){
+                response.setCompleted(true);
+                response.setDescription("Upload successfully executed");
+            }else{
+                response.setCompleted(false);
+                response.setDescription("Upload failed;");
+            }
+        }catch (InternalError ie){
             response.setCompleted(false);
-            response.setDescription("Upload failed;");
+            response.setDescription(ie.getDescription());
         }
         return response;
     }

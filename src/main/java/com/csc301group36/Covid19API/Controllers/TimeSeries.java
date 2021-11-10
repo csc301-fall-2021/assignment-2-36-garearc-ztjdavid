@@ -25,14 +25,19 @@ public class TimeSeries {
     QueryParser queryParser;
 
     @PostMapping(path = "/overwrite/{type}")
-    public Response overWrite(@RequestBody String data, @PathVariable("type") String type) throws InternalError, RequestError {
+    public Response overWrite(@RequestBody String data, @PathVariable("type") String type) throws RequestError {
         Response response = new Response();
-        if(csvManager.overrideTimeSeriesFile(data, dataService.parseTimeRequestType(type))){
-            response.setCompleted(true);
-            response.setDescription("OverWrite executed successfully");
-        } else{
+        try{
+            if(csvManager.overrideTimeSeriesFile(data, dataService.parseTimeRequestType(type))){
+                response.setCompleted(true);
+                response.setDescription("OverWrite executed successfully");
+            } else{
+                response.setCompleted(false);
+                response.setDescription("Failed to execute OverWrite");
+            }
+        }catch (InternalError ie){
             response.setCompleted(false);
-            response.setDescription("Failed to execute OverWrite");
+            response.setDescription(ie.getDescription());
         }
         return response;
     }
