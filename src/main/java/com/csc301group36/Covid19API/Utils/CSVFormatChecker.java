@@ -72,8 +72,9 @@ public class CSVFormatChecker {
                     }
                 }
             }catch (Exception e) {throw new InternalError("Records are not consistent with fields, please check your csv format.");}
+            return true;
         }
-        return true;
+        return false;
     }
 
     private boolean hasValidDateFields(List<CSVRecord> records) throws InternalError{
