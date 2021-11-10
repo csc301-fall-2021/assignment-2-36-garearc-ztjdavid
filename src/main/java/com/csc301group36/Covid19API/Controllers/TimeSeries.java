@@ -55,7 +55,7 @@ public class TimeSeries {
         return response;
     }
 
-    @PostMapping(path = "/query/csv/{type}")
+    @GetMapping(path = "/query/csv/{type}")
     public ResponseEntity<String> queryCsvData(@PathVariable("type") String type
         ,@RequestParam(name = "country", required = false) String country,
         @RequestParam(name = "state", required = false)String state,
