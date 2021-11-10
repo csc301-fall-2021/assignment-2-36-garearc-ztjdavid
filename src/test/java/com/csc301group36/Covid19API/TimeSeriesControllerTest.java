@@ -59,12 +59,8 @@ public class TimeSeriesControllerTest {
 
     @Test
     public void testQuery() throws Exception{
-        String url = "http://localhost:" + port + "/api/timeSeries/query/json/death";
-        ReqBody rb = new ReqBody();
-        rb.setCountry("Austria");
-        rb.setStartDate("1/22/20");
-        rb.setEndDate("1/23/20");
-        List<Map<String, String>> qr = (List<Map<String, String>>)this.restTemplate.postForObject(url, rb, Object.class);
+        String url = "http://localhost:" + port + "/api/timeSeries/query/json/death?country=Austria&startDate=1/22/20&endDate=1/23/20";
+        List<Map<String, String>> qr = (List<Map<String, String>>)this.restTemplate.getForObject(url, Object.class);
         assertThat(qr.size()).isEqualTo(1);
         assertThat(qr.get(0).get("1/22/20")).isEqualTo("0");
         assertThat(qr.get(0).get("1/23/20")).isEqualTo("200");

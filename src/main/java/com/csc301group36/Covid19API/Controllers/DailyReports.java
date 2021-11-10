@@ -46,11 +46,11 @@ public class DailyReports {
 
     @GetMapping(path = "/query/csv/{type}")
     public ResponseEntity<String> queryCsvData(@PathVariable("type") String type,
-                                               @RequestParam(name = "country", required = false) String country,
-                                               @RequestParam(name = "state", required = false)String state,
-                                               @RequestParam(name = "combinedKeys", required = false) String combinedKeys,
-                                               @RequestParam(name = "startDate", required = false) String startDate,
-                                               @RequestParam(name = "endDate", required = false) String endDate) throws InternalError, RequestError{
+                                               @RequestParam(value = "country", required = false) String country,
+                                               @RequestParam(value = "state", required = false)String state,
+                                               @RequestParam(value = "combinedKeys", required = false) String combinedKeys,
+                                               @RequestParam(value = "startDate", required = false) String startDate,
+                                               @RequestParam(value = "endDate", required = false) String endDate) throws InternalError, RequestError{
         ReqBody reqBody = new ReqBody();
         reqBody.setCountry(country);
         reqBody.setState(state);
@@ -62,11 +62,11 @@ public class DailyReports {
 
     @GetMapping (path = "/query/json/{type}", produces = "application/json")
     public List<Map<String, String>> queryJsonData(@PathVariable("type") String type,
-                                                   @RequestParam(name = "country", required = false) String country,
-                                                   @RequestParam(name = "state", required = false)String state,
-                                                   @RequestParam(name = "combinedKeys", required = false) String combinedKeys,
-                                                   @RequestParam(name = "startDate", required = false) String startDate,
-                                                   @RequestParam(name = "endDate", required = false) String endDate) throws InternalError, RequestError{
+                                                   @RequestParam(value = "country", required = false) String country,
+                                                   @RequestParam(value = "state", required = false)String state,
+                                                   @RequestParam(value = "combinedKeys", required = false) String combinedKeys,
+                                                   @RequestParam(value = "startDate", required = false) String startDate,
+                                                   @RequestParam(value = "endDate", required = false) String endDate) throws InternalError, RequestError{
         ReqBody reqBody = new ReqBody();
         reqBody.setCountry(country);
         reqBody.setState(state);

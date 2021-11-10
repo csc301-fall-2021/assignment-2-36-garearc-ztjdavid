@@ -40,12 +40,8 @@ public class DailyReportsControllerTest {
 
     @Test
     public void testQuery() throws Exception{
-        String url = "http://localhost:" + port + "/api/DailyReports/query/json/death";
-        ReqBody rb = new ReqBody();
-        rb.setCountry("US");
-        rb.setStartDate("1999-01-01");
-        rb.setEndDate("1999-01-01");
-        List<Map<String, String>> qr = (List<Map<String, String>>)this.restTemplate.postForObject(url, rb, Object.class);
+        String url = "http://localhost:" + port + "/api/DailyReports/query/json/death?country=US&startDate=1999-01-01&endDate=1999-01-01";
+        List<Map<String, String>> qr = (List<Map<String, String>>)this.restTemplate.getForObject(url, Object.class);
         assertThat(qr.size()).isEqualTo(2);
         assertThat(qr.get(0).get("Deaths")).isEqualTo("0");
         assertThat(qr.get(1).get("Deaths")).isEqualTo("26");
