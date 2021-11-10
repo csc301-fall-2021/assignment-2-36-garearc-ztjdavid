@@ -89,6 +89,7 @@ public class DBManager {
 
     private void initMap(){
         File dailyReportsDir = new File(dailyReportsDirName);
+        if(!dailyReportsDir.exists()) initFolders();
         File[] files = dailyReportsDir.listFiles();
         if(files != null){
             for(File file : files){

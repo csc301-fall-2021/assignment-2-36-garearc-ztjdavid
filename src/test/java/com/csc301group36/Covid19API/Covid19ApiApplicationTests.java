@@ -18,23 +18,6 @@ class Covid19ApiApplicationTests {
 
 	@Test
 	void contextLoads() throws Exception {
-		File f = new File("csv/test.csv");
-		Reader r = new FileReader(f);
-		CSVFormat format = CSVFormat.Builder.create(CSVFormat.DEFAULT)
-				.setHeader()
-				.setDelimiter(',')
-				.build();
-
-		Iterable<CSVRecord> records = format.parse(r);
-		List<CSVRecord> recordList = new ArrayList<>();
-		records.forEach(recordList::add);
-
-
-		List<Map<String, String>> queryResult = new ArrayList<>();
-		for(CSVRecord record : recordList){
-			queryResult.add(record.toMap());
-		}
-		System.out.println(queryResult);
 	}
 
 }

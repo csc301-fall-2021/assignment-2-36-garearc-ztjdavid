@@ -41,11 +41,11 @@ public class CSVFormatChecker {
 
     // Helpers
     private boolean isValidDailyReportsHelper(List<CSVRecord> records) throws InternalError{
-        return formatCheckHelper(records, dailyReportsHeaders);
+        return formatCheckHelper(records, dailyReportsHeaders) && hasValidNumberFields(DBType.DailyReports, records);
     }
 
     private boolean isValidTimeSeriesUpdateHelper(List<CSVRecord> records, Collection<String> headerSet) throws InternalError{
-        return formatCheckHelper(records, headerSet) && hasValidDateFields(records);
+        return formatCheckHelper(records, headerSet) && hasValidDateFields(records) && hasValidNumberFields(DBType.TimeSeries, records);
     }
 
     private boolean isValidTimeSeriesOverrideHelper(List<CSVRecord> records) throws InternalError{
@@ -54,7 +54,7 @@ public class CSVFormatChecker {
             if(!newHeaders.contains(header)) throw new InternalError("Invalid CSV format. Fields must contain at least: "
                     + timeSeriesOverrideHeaders.toString());
         }
-        return hasValidDateFields(records);
+        return hasValidDateFields(records) && hasValidNumberFields(DBType.TimeSeries, records);
     }
 
     private boolean formatCheckHelper(List<CSVRecord> records, Collection<String> headers) throws InternalError{

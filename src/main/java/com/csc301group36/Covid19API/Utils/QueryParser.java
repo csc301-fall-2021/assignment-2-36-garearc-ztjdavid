@@ -37,7 +37,7 @@ public class QueryParser {
 
     /**
      * Parse a list of records so that they can be
-     * returned as JSON format.
+     * returned in JSON format.
      * @param records a list of records <strong>from the same CSV source</strong>.
      * */
     public List<Map<String, String>> parseJSON(List<CSVRecord> records){
